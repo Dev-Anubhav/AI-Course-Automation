@@ -8,7 +8,6 @@ import CourseDetail from "./CourseDetails";
 const Home = () => {
     const [text, setText] = useState('');
     const [data,setData] = useState({});
-    const[show,setShow]=useState(true);
 
   useEffect(() => {
     fetchData();
@@ -25,6 +24,26 @@ const Home = () => {
         <h1><strong>${title}</strong></h1>
         <p><b>Applications</b></p>
         <p>${application}</p>
+        <h3 className="font-Mont text-lg font-bold mb-5"><strong>Elements And Performance Criteria</strong></h3>
+        {data.elements_and_performance_criteria && (
+            <div className="grid gap-4">
+                {data.elements_and_performance_criteria.map((item, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="element">
+                            <h4 className="font-Mont font-bold">{item.element.title}</h4>
+                            <p>{item.element.number}</p>
+                        </div>
+                        <div className="criteria">
+                            {item.criteria.map((criterion, idx) => (
+                                <div key={idx} className="mb-2">
+                                    <p>{criterion.number}: {criterion.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
       `
       setText(htmlContent); 
     } catch (error) {

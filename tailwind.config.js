@@ -17,6 +17,9 @@ export default {
       colors: {
         primary: "#6F86AD",
       }
+      ,gridTemplateColumns: {
+        '2-auto': 'auto auto',
+      },
     },
   },
   plugins: [],

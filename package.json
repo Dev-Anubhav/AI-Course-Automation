@@ -19,6 +19,7 @@
     "axios": "^1.7.2",
     "ckeditor5": "^42.0.0",
     "ckeditor5-premium-features": "^42.0.0",
+    "html-docx-js": "^0.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.2.1"
