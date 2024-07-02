@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createContext } from 'react';
 import Logo from '../assets/training-logo-red-RGB-237.png'
 
 const Navbar = () => {

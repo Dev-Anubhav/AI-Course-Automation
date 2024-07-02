@@ -2,103 +2,141 @@ import React, { useState, useEffect } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import axios from 'axios';
-import { APICONFIG } from '../PYTHONCONFIG/config';
+import { APICONFIG } from './PYTHONCONFIG/config';
+import PopUp from "./PopOver"
 
 const EditComponent = () => {
   const [text, setText] = useState('');
   const [data, setData] = useState({});
+  const [unit, setUnit] = useState("ueeel0025")
+  const [debouncedInputValue, setDebouncedInputValue] = useState('');
+  const [show, setShow] = useState(false);
+  const [searchTerm, setsearchTerm] = useState("")
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [inputValue, setInputValue] = useState(' ');
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submitted:', inputValue);
+    fetchData(debouncedInputValue)
+    handleClose();
+
+  };
 
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => {
+      setDebouncedInputValue(inputValue);
+    }, 500);
+    fetchData()
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
+
+  const handleSub = (e) => {
+    e.preventDefault();
+    fetchData()
+  }
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(APICONFIG.trainingModel);
-      setData(response.data);
+      let response;
+      if (searchTerm.trim() === "") {
+        response = await axios.get(`${APICONFIG.trainingModel}${unit}`);
+      } else {
+        response = await axios.get(`${APICONFIG.trainingModel}${searchTerm}`);
+      }
       console.log(response.data);
-
-      const { title, application, elements_and_performance_criteria,performance_evidence,knowledge_evidence } = response.data;
-
+  
+      const { title, application, elements_and_performance_criteria, performance_evidence, knowledge_evidence } = response.data;
+  
       const elementsHtml = elements_and_performance_criteria.map((item, index) => {
         const criteriaHtml = item.criteria.map((criterion, idx) => (
           `<div key=${idx} class="mb-2">
-            <p>${criterion.number}: ${criterion.description}</p>
+            <p><b>${criterion.number}</b> ${criterion.description}</p>
           </div>`
         )).join('');
-
+  
         return `
-          <div key=${index} class="grid grid-cols-2 gap-4 mb-4">
-            <div class="element">
-              <h4 class="font-Mont font-bold">${item.element.title}</h4>
-              <p>${item.element.number}</p>
-            </div>
-            <div class="criteria">
-              ${criteriaHtml}
-            </div>
+          <div key=${index} class="mb-4">
+            <h4 class="font-Mont">${item.element.number}: ${item.element.title}</h4>
+            ${criteriaHtml}
           </div>`;
       }).join('');
-
-
+  
       const performanceEvidenceHtml = `
-        <h3 class="font-Mont text-lg font-bold mb-4"><b>Performance Evidence</b></h3>
-        ${performance_evidence && performance_evidence.length > 0 ? `
-          <ol class="list-decimal pl-5">
+        <div class="mb-4">
+          <h3 class="font-Mont text-lg font-bold mb-4"><b>Performance Evidence</b></h3>
+          ${performance_evidence && performance_evidence.length > 0 ? `
             ${performance_evidence.map((item, index) => `
-              <li key=${index} class="mb-2">
-                ${item.evidence}
+              <div key=${index} class="mb-2">
+                <p><b>${item.number}</b> ${item.evidence}</p>
                 ${item.sublist && item.sublist.length > 0 ? `
-                  <ol class="list-decimal pl-5">
+                  <div class="pl-5">
                     ${item.sublist.map((subitem, subindex) => `
-                      <li key=${subindex}>${subitem.evidence}</li>
-                    `)}
-                  </ol>
+                      <p key=${subindex}><b>${subitem.number}</b>: ${subitem.evidence}</p>
+                    `).join('')}
+                  </div>
                 ` : ''}
-              </li>
-            `)}
-          </ol>
-        ` : ''}
+              </div>
+            `).join('')}
+          ` : ''}
+        </div>
       `;
-
+  
       const knowledgeEvidenceHtml = `
-      <h3 class="font-Mont text-lg font-bold mb-4"><b>Knowledge Evidence</b></h3>
-      ${knowledge_evidence && knowledge_evidence.length > 0 ? `
-        <ol class="list-decimal pl-5">
-          ${knowledge_evidence.map((item, index) => `
-            <li key=${index} class="mb-2">
-              ${item.evidence}
-              ${item.sublist && item.sublist.length > 0 ? `
-                <ol class="list-decimal pl-5">
-                  ${item.sublist.map((subitem, subindex) => `
-                    <li key=${subindex}>${subitem.evidence}</li>
-                  `).join('')}
-                </ol>
-              ` : ''}
-            </li>
-          `).join('')}
-        </ol>
-      ` : ''}
-    `;
-
-
+        <div class="mb-4">
+          <h3 class="font-Mont text-lg font-bold mb-4"><b>Knowledge Evidence</b></h3>
+          ${knowledge_evidence && knowledge_evidence.length > 0 ? `
+            ${knowledge_evidence.map((item, index) => `
+              <div key=${index} class="mb-2">
+              <p><b>${item.number}</b> ${item.evidence}</p>
+                ${item.sublist && item.sublist.length > 0 ? `
+                  <div class="pl-5">
+                    ${item.sublist.map((subitem, subindex) => `
+                    <p key=${subindex}><b>${subitem.number}</b>: ${subitem.evidence}</p>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          ` : ''}
+        </div>
+      `;
+  
       const htmlContent = `
         <h1><strong>${title}</strong></h1>
         <p><b>Applications</b></p>
         <p>${application}</p>
         <h3 class="font-Mont text-lg font-bold mb-5"><strong>Elements And Performance Criteria</strong></h3>
-        <div class="grid gap-4">
+        <div class="grid grid-cols-1 gap-4">
           ${elementsHtml}
         </div>
-        ${performanceEvidenceHtml}
-        ${knowledgeEvidenceHtml}
-
+        <div class="grid grid-cols-2 gap-4">
+          <div class="performance-evidence">
+            ${performanceEvidenceHtml}
+          </div>
+          <div class="knowledge-evidence">
+            ${knowledgeEvidenceHtml}
+          </div>
+        </div>
       `;
-
+  
       setText(htmlContent);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+  
 
   const handleEditorChange = (event, editor) => {
     const data = editor.getData();
@@ -106,7 +144,21 @@ const EditComponent = () => {
   };
 
   return (
-    <div style={{ height: '100vh', overflow: 'auto' }}>
+    <div style={{ height: '100vh' }}>
+      {
+        show && <button className='border py-4 px-8 rounded-sm text-white bg-btnColor absolute right-0 -top-16 z-10' onClick={handleClick}>Command</button>
+      }
+
+      <form onSubmit={handleSub} className="mb-4">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setsearchTerm(e.target.value)}
+          className="border border-gray-300 p-2"
+        />
+        <button type="submit" className="ml-2 py-2 px-4 bg-blue-500 text-white rounded-md">Search</button>
+      </form>
       <CKEditor
         editor={ClassicEditor}
         data={text}
@@ -126,6 +178,7 @@ const EditComponent = () => {
           }
         }}
       />
+      <PopUp />
     </div>
   );
 };
