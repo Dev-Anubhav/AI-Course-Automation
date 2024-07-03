@@ -1,12 +1,12 @@
 import React, { createContext } from 'react';
-import Logo from '../assets/training-logo-red-RGB-237.png'
+import Logo from '../assets/Final Logo - Copy.png'
 
 const Navbar = () => {
     return (
         <nav className="bg-white p-4 mb-3 shadow-sm">
             <div className="container mx-auto flex items-center justify-between">
                 <div className="flex items-center flex-shrink-0 text-white mr-6">
-                   <img src={Logo} alt="logo" />
+                   <img className='h-16' src={Logo} alt="logo" />
                    
                 </div>
 
